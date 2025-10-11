@@ -1,57 +1,88 @@
-import { useState } from 'react'
-import { Container, Typography, Button, Box, AppBar, Toolbar, Card, CardContent } from '@mui/material'
-import { Add } from '@mui/icons-material'
-import reactLogo from './assets/react.svg'
-import viteLogo from '/vite.svg'
+import React from 'react'
+import { Box } from '@mui/material'
+import { ThemeProvider } from '@mui/material/styles'
+import { theme } from './theme'
+import { useImageUpload } from './hooks/useImageUpload'
+import {
+  Header,
+  WelcomeMessage,
+  UploadArea,
+  ImagePreview,
+  AnalysisLoading,
+  FlightResults,
+  CameraDialog,
+  Footer
+} from './components/index'
 
-function App() {
-  const [count, setCount] = useState(0)
+const App: React.FC = () => {
+  const {
+    uploadedImage,
+    isAnalyzing,
+    flightResults,
+    isCameraOpen,
+    cameraError,
+    fileInputRef,
+    videoRef,
+    handleFileUpload,
+    handleOpenCamera,
+    handleTakeSnapshot,
+    handleCloseCamera,
+    handleClearImage,
+  } = useImageUpload()
 
   return (
-    <>
-      <AppBar position="static">
-        <Toolbar>
-          <Typography variant="h6" component="div" sx={{ flexGrow: 1 }}>
-            Vite + React + MUI
-          </Typography>
-        </Toolbar>
-      </AppBar>
-      
-      <Container maxWidth="md" sx={{ mt: 4 }}>
-        <Box textAlign="center" mb={4}>
-          <Box display="flex" justifyContent="center" gap={2} mb={2}>
-            <img src={viteLogo} style={{ height: '6em' }} alt="Vite logo" />
-            <img src={reactLogo} style={{ height: '6em' }} alt="React logo" />
-          </Box>
-          
-          <Typography variant="h2" component="h1" gutterBottom>
-            Vite + React + MUI
-          </Typography>
-          
-          <Card sx={{ maxWidth: 400, mx: 'auto', mt: 4 }}>
-            <CardContent>
-              <Button 
-                variant="contained" 
-                startIcon={<Add />}
-                onClick={() => setCount((count) => count + 1)}
-                size="large"
-                fullWidth
-              >
-                Count is {count}
-              </Button>
-              
-              <Typography variant="body2" color="text.secondary" sx={{ mt: 2 }}>
-                Edit <code>src/App.tsx</code> and save to test HMR
-              </Typography>
-            </CardContent>
-          </Card>
-          
-          <Typography variant="body1" color="text.secondary" sx={{ mt: 4 }}>
-            Click on the Vite and React logos to learn more
-          </Typography>
+    <ThemeProvider theme={theme}>
+      <Box sx={{ display: 'flex', flexDirection: 'column', minHeight: '100vh', bgcolor: 'background.default' }}>
+        <Header />
+        
+        {/* Main Content */}
+        <Box 
+          sx={{ 
+            flex: 1, 
+            display: 'flex', 
+            flexDirection: 'column',
+            maxWidth: '900px',
+            width: '100%',
+            mx: 'auto',
+            px: 3,
+            py: 4,
+          }}
+        >
+          {!uploadedImage && <WelcomeMessage />}
+
+          {!uploadedImage ? (
+            <UploadArea 
+              onFileUpload={handleFileUpload}
+              onOpenCamera={handleOpenCamera}
+              fileInputRef={fileInputRef}
+            />
+          ) : (
+            <Box>
+              <ImagePreview 
+                image={uploadedImage}
+                onClear={handleClearImage}
+              />
+
+              {isAnalyzing && <AnalysisLoading />}
+
+              {!isAnalyzing && flightResults.length > 0 && (
+                <FlightResults flights={flightResults} />
+              )}
+            </Box>
+          )}
         </Box>
-      </Container>
-    </>
+
+        <Footer />
+
+        <CameraDialog 
+          open={isCameraOpen}
+          onClose={handleCloseCamera}
+          onCapture={handleTakeSnapshot}
+          videoRef={videoRef}
+          error={cameraError}
+        />
+      </Box>
+    </ThemeProvider>
   )
 }
 
