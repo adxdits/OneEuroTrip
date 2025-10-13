@@ -1,0 +1,23 @@
+{
+  "pages": {
+    "/page": [
+      "static/chunks/[root-of-the-server]__56aaf4d7._.css",
+      "static/chunks/57ccb_7915d89b._.js",
+      "static/chunks/Cours_E4_al_mounayar-hamani_frontend_app_e5abb910._.js",
+      "static/chunks/Cours_E4_al_mounayar-hamani_frontend_app_layout_tsx_758d7a08._.js",
+      "static/chunks/57ccb_next_dist_client_components_builtin_global-error_5643050e.js",
+      "static/chunks/57ccb_a60e4f8a._.js",
+      "static/chunks/Cours_E4_al_mounayar-hamani_frontend_app_3a97bacb._.js",
+      "static/chunks/Cours_E4_al_mounayar-hamani_frontend_app_page_tsx_5643050e._.js",
+      "static/chunks/[turbopack]_browser_dev_hmr-client_hmr-client_ts_bf601aab._.js",
+      "static/chunks/57ccb_next_dist_compiled_react-dom_dd8cb36c._.js",
+      "static/chunks/57ccb_next_dist_compiled_next-devtools_index_9892c98e.js",
+      "static/chunks/57ccb_next_dist_compiled_336443df._.js",
+      "static/chunks/57ccb_next_dist_client_b2000ecb._.js",
+      "static/chunks/57ccb_next_dist_74525fe7._.js",
+      "static/chunks/57ccb_@swc_helpers_cjs_a448f5b4._.js",
+      "static/chunks/Cours_E4_al_mounayar-hamani_frontend_a0ff3932._.js",
+      "static/chunks/turbopack-Cours_E4_al_mounayar-hamani_frontend_a8be1950._.js"
+    ]
+  }
+}
