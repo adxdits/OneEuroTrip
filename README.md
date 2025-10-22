@@ -1,55 +1,307 @@
 # Travel Inspiration App
 
-A full-stack application for discovering travel destinations through image uploads. Users can upload photos or take pictures to find flight options to similar destinations.
+Une application full-stack pour découvrir des destinations de voyage et identifier des monuments via l'upload d'images.
 
-## Tech Stack
+## ✨ Fonctionnalités
 
-### Backend
-- **Quarkus** - Java framework
-- **LLaMA 2** - Local LLM for text generation
-- **llama.cpp** - LLM inference engine
+- 🏛️ **Reconnaissance de monuments** : Identifiez automatiquement des monuments et lieux touristiques sur vos photos
+- 📸 **Upload d'images** : Envoyez vos photos pour analyse
+- 🤖 **IA locale** : Utilise StreetCLIP (PyTorch) pour la reconnaissance et LLaMA 2 pour le texte
+- 🎨 **Interface moderne** : UI Material-UI responsive et élégante
 
-### Frontend
-- **React 19** with TypeScript
-- **Vite** - Build tool and dev server
-- **Material-UI** - Component library
-- **Emotion** - Styling solution
-
-## Project Structure
+## 🏗️ Architecture
 
 ```
-├── backend/          # Quarkus backend application
-├── frontend/         # React frontend application
-└── ressources/       # Additional resources
+┌─────────────────┐      ┌──────────────────┐      ┌─────────────────┐
+│   Frontend      │─────▶│  Backend Quarkus │─────▶│ Python Service  │
+│   React + TS    │◀─────│     (Java 21)    │◀─────│   (StreetCLIP)  │
+└─────────────────┘      └──────────────────┘      └─────────────────┘
+  Port 5173                   Port 8080                  Port 5000
 ```
 
-## Getting Started
+## 🚀 Tech Stack
+
+### Backend
+- **Quarkus 3.26** - Framework Java moderne et rapide
+- **Java 21** - Dernière version LTS
+- **StreetCLIP** - Modèle PyTorch pour la reconnaissance de monuments
+- **LLaMA 2** (optionnel) - LLM local pour la génération de texte
+
+### Service Python
+- **Flask** - Framework web léger
+- **PyTorch** - Deep learning
+- **CLIP** - Modèle vision-langage d'OpenAI
+- **StreetCLIP** - Fine-tuning de CLIP pour les monuments
+
+### Frontend
+- **React 19** avec TypeScript
+- **Vite** - Build tool ultra-rapide
+- **Material-UI** - Bibliothèque de composants
+- **Emotion** - Solution de styling
+
+## 📁 Structure du Projet
+
+```
+├── backend/                      # Application backend Quarkus
+│   ├── src/main/java/           # Code Java
+│   │   └── com/myapp/
+│   │       ├── resources/       # Endpoints REST
+│   │       └── services/        # Services métier
+│   ├── src/main/python/         # Service Python StreetCLIP
+│   │   ├── monument_recognition.py
+│   │   ├── requirements.txt
+│   │   └── start.bat/sh
+│   └── pom.xml
+├── frontend/                     # Application frontend React
+│   ├── src/
+│   │   ├── components/          # Composants React
+│   │   ├── hooks/               # Hooks personnalisés
+│   │   └── types/               # Types TypeScript
+│   └── package.json
+├── ressources/                   # Ressources additionnelles
+├── QUICKSTART.md                # Guide de démarrage rapide
+└── MONUMENT_RECOGNITION.md      # Documentation complète
+```
+
+## 🚀 Démarrage Rapide
+
+**Consultez [QUICKSTART.md](./QUICKSTART.md) pour un guide détaillé !**
+
+### Prérequis
+
+- **Java 21+**
+- **Python 3.8+**
+- **Node.js 18+**
+- **Fichier `pytorch_model.bin`** du repo StreetCLIP
+
+### Installation Express
+
+#### 1. Service Python (StreetCLIP)
+
+```bash
+# Placer le modèle
+# Copiez pytorch_model.bin dans backend/src/main/python/
+
+cd backend/src/main/python
+
+# Installer les dépendances
+pip install flask torch torchvision pillow ftfy regex tqdm
+pip install git+https://github.com/openai/CLIP.git
+
+# Démarrer le service
+python monument_recognition.py
+```
+
+#### 2. Backend Quarkus
+
+```bash
+cd backend
+./mvnw quarkus:dev
+```
+
+Backend disponible sur `http://localhost:8080`
+
+#### 3. Frontend React
+
+```bash
+cd frontend
+npm install
+npm run dev
+```
+
+Frontend disponible sur `http://localhost:5173`
+
+## 📡 API Endpoints
+
+### Reconnaissance de Monuments
+
+```bash
+# Vérifier la santé du service
+GET http://localhost:8080/api/monuments/health
+
+# Reconnaître un monument (upload de fichier)
+POST http://localhost:8080/api/monuments/recognize
+Content-Type: multipart/form-data
+Body: file=<image>
+
+# Reconnaître un monument (base64)
+POST http://localhost:8080/api/monuments/recognize/base64
+Content-Type: application/json
+Body: {"image": "<base64-string>"}
+```
+
+**Exemple de réponse :**
+```json
+{
+  "monument": "Tour Eiffel, Paris",
+  "confidence": 0.95
+}
+```
+
+### Documentation Swagger
+
+Accédez à la documentation interactive :
+```
+http://localhost:8080/swagger-ui
+```
+
+## 🧪 Tests
+
+### Test avec curl
+
+**Windows (PowerShell) :**
+```powershell
+curl.exe -X POST http://localhost:8080/api/monuments/recognize `
+  -F "file=@C:\chemin\vers\image.jpg"
+```
+
+**Linux/Mac :**
+```bash
+curl -X POST http://localhost:8080/api/monuments/recognize \
+  -F "file=@/chemin/vers/image.jpg"
+```
+
+### Test avec le script Python
+
+```bash
+cd backend/src/main/python
+python test_service.py /chemin/vers/image.jpg
+```
+
+## 🎨 Utilisation dans le Frontend
+
+```typescript
+import { useMonumentRecognition } from './hooks/useMonumentRecognition';
+import { MonumentResult } from './components';
+
+const MyComponent = () => {
+  const { recognizeMonument, isRecognizing, result } = useMonumentRecognition();
+
+  const handleUpload = async (file: File) => {
+    await recognizeMonument(file);
+  };
+
+  return (
+    <div>
+      <input type="file" onChange={(e) => handleUpload(e.target.files[0])} />
+      {isRecognizing && <p>Reconnaissance en cours...</p>}
+      {result && <MonumentResult monument={result.monument} confidence={result.confidence} />}
+    </div>
+  );
+};
+```
+
+**Voir [frontend/INTEGRATION.md](./frontend/INTEGRATION.md) pour plus d'exemples !**
+
+## 🏛️ Monuments Supportés
+
+Le système reconnaît ~30 monuments célèbres dont :
+- 🇫🇷 Tour Eiffel, Arc de Triomphe, Notre-Dame, Sacré-Cœur, Louvre (Paris)
+- 🇫🇷 Mont Saint-Michel, Versailles, Château de Chambord
+- 🇮🇹 Colisée, Tour de Pise (Italie)
+- 🇬🇧 Big Ben, Tower Bridge (Londres)
+- 🇺🇸 Statue de la Liberté, Golden Gate Bridge
+- 🇮🇳 Taj Mahal
+- 🇪🇬 Pyramides de Gizeh
+- 🇪🇸 Sagrada Familia, Alhambra
+- Et bien d'autres...
+
+Pour ajouter de nouveaux monuments, modifiez la liste dans `backend/src/main/python/monument_recognition.py`.
+
+## 📚 Documentation
+
+- 📖 [QUICKSTART.md](./QUICKSTART.md) - Guide de démarrage rapide
+- 📖 [MONUMENT_RECOGNITION.md](./MONUMENT_RECOGNITION.md) - Documentation complète du service
+- 📖 [frontend/INTEGRATION.md](./frontend/INTEGRATION.md) - Guide d'intégration frontend
+- 📖 [backend/src/main/python/README.md](./backend/src/main/python/README.md) - Documentation du service Python
+
+## 🔧 Configuration
+
+### Backend (`backend/src/main/resources/application.properties`)
+
+```properties
+# URL du service Python
+monument.recognition.service.url=http://localhost:5000
+
+# Taille max des uploads
+quarkus.http.limits.max-body-size=10M
+
+# Port du backend
+quarkus.http.port=8080
+```
+
+### Frontend (`frontend/.env`)
+
+```bash
+VITE_API_URL=http://localhost:8080
+```
+
+## 🐛 Troubleshooting
+
+### Le service Python ne démarre pas
+- Vérifiez Python 3.8+ : `python --version`
+- Installez les dépendances : `pip install -r requirements.txt`
+- Vérifiez les logs pour les erreurs
+
+### Le backend ne se connecte pas au service Python
+- Vérifiez que Python tourne : `curl http://localhost:5000/health`
+- Vérifiez l'URL dans `application.properties`
+
+### Modèle PyTorch non trouvé
+- Le service fonctionnera avec CLIP standard (moins précis)
+- Pour StreetCLIP, placez `pytorch_model.bin` dans `backend/src/main/python/`
+
+### Erreur CORS dans le frontend
+- Vérifiez que le backend autorise `http://localhost:5173` dans les origines CORS
+
+## 🚢 Déploiement
 
 ### Backend
 
-1. Navigate to the backend directory:
-   ```bash
-   cd backend
-   ```
+```bash
+cd backend
+./mvnw clean package
+java -jar target/quarkus-app/quarkus-run.jar
+```
 
-2. Run the application in dev mode:
-   ```bash
-   ./mvnw quarkus:dev
-   ```
+### Service Python (Production)
 
-The backend will be available at `http://localhost:8080`
+```bash
+cd backend/src/main/python
+gunicorn -w 4 -b 0.0.0.0:5000 monument_recognition:app
+```
 
 ### Frontend
 
-1. Navigate to the frontend directory:
-   ```bash
-   cd frontend
-   ```
+```bash
+cd frontend
+npm run build
+# Les fichiers statiques sont dans dist/
+```
 
-2. Install dependencies:
-   ```bash
-   npm install
-   ```
+## 🤝 Contribution
+
+1. Fork le projet
+2. Créez une branche (`git checkout -b feature/nouvelle-fonctionnalite`)
+3. Committez vos changements (`git commit -m 'Ajout d'une fonctionnalité'`)
+4. Push vers la branche (`git push origin feature/nouvelle-fonctionnalite`)
+5. Ouvrez une Pull Request
+
+## 📝 Licence
+
+Ce projet est sous licence MIT.
+
+## 🙏 Remerciements
+
+- [OpenAI CLIP](https://github.com/openai/CLIP) - Modèle vision-langage
+- [StreetCLIP](https://github.com/gmberton/StreetCLIP) - Fine-tuning pour monuments
+- [Quarkus](https://quarkus.io/) - Framework Java Supersonic
+- [React](https://react.dev/) - Bibliothèque UI
+
+---
+
+**Fait avec ❤️ pour l'identification de monuments**
+
 
 3. Start the development server:
    ```bash

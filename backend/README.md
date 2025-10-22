@@ -1,20 +1,87 @@
-# trip-ai
+# Trip AI - Backend Quarkus
 
-This project uses Quarkus, the Supersonic Subatomic Java Framework.
+Backend de l'application Trip AI avec service de reconnaissance de monuments utilisant StreetCLIP.
 
-If you want to learn more about Quarkus, please visit its website: <https://quarkus.io/>.
+## 🌟 Fonctionnalités
 
-## Running the application in dev mode
+- **Reconnaissance de monuments** : Identifie automatiquement des monuments et lieux touristiques sur des images
+- **API REST** : Endpoints pour l'upload d'images et la reconnaissance
+- **Service LLM local** : Support pour LLaMA (optionnel)
+- **Documentation OpenAPI** : Swagger UI intégré
 
-You can run your application in dev mode that enables live coding using:
+## 🏗️ Architecture
 
-```shell script
+```
+┌─────────────────┐      ┌──────────────────┐
+│   Frontend      │─────▶│  Quarkus Backend │
+│   (React)       │◀─────│  (Java 21)       │
+└─────────────────┘      └──────────────────┘
+                               │
+                               ▼
+                         ┌──────────────────┐
+                         │  Python Service  │
+                         │  (StreetCLIP)    │
+                         └──────────────────┘
+```
+
+## 🚀 Démarrage Rapide
+
+### Prérequis
+
+- Java 21+
+- Maven 3.8+
+- Python 3.8+ (pour le service de reconnaissance)
+
+### 1. Démarrer le service Python
+
+**Voir le guide détaillé :** [QUICKSTART.md](../QUICKSTART.md)
+
+```bash
+cd src/main/python
+pip install -r requirements.txt
+python monument_recognition.py
+```
+
+### 2. Démarrer le backend Quarkus
+
+```bash
 ./mvnw quarkus:dev
 ```
 
-> **_NOTE:_**  Quarkus now ships with a Dev UI, which is available in dev mode only at <http://localhost:8080/q/dev/>.
+L'application démarre sur http://localhost:8080
 
-## Packaging and running the application
+## 📡 API Endpoints
+
+### Monument Recognition
+
+- `GET /api/monuments/health` - Vérifier la santé du service
+- `POST /api/monuments/recognize` - Reconnaître un monument (multipart/form-data)
+- `POST /api/monuments/recognize/base64` - Reconnaître un monument (base64)
+
+### Chat (optionnel)
+
+- `POST /api/chat` - Générer du texte avec LLM local
+
+### Documentation
+
+- Swagger UI : http://localhost:8080/swagger-ui
+- OpenAPI JSON : http://localhost:8080/q/openapi
+
+## 🧪 Tests
+
+```bash
+# Tests unitaires
+./mvnw test
+
+# Tests d'intégration
+./mvnw verify
+
+# Test du service de reconnaissance
+cd src/main/python
+python test_service.py /chemin/vers/image.jpg
+```
+
+## 📦 Packaging
 
 The application can be packaged using:
 
