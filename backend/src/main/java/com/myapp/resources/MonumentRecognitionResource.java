@@ -132,6 +132,7 @@ public class MonumentRecognitionResource {
                 result.monument(),
                 result.confidence()
             )).build();
+            
 
         } catch (IllegalArgumentException e) {
             LOGGER.warning("Invalid base64 image: " + e.getMessage());
