@@ -46,8 +46,29 @@ nb-configuration.xml
 
 # LLM Model files
 src/main/resources/*.gguf
-src/main/resources/*.bin
 src/main/resources/*.safetensors
 
-# Or more specifically
-backend/src/main/resources/llama-2-7b-chat.Q4_0.gguf
+# PyTorch and ONNX model files (but keep CLIP models)
+*.bin
+*.pt
+*.pth
+src/main/resources/*.bin
+# Keep CLIP ONNX models needed for monument recognition
+!src/main/resources/clip_vision.onnx
+!src/main/resources/clip_text.onnx
+
+# Python files and environments
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+env/
+venv/
+*.egg-info/
+*.py
+*.pyc
+
+# Temporary files
+llama.log
+labels_temp.json

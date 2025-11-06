@@ -4,6 +4,64 @@ This project uses Quarkus, the Supersonic Subatomic Java Framework.
 
 If you want to learn more about Quarkus, please visit its website: <https://quarkus.io/>.
 
+## 🖼️ Reconnaissance d'images avec PyTorch/ONNX
+
+Ce projet inclut un service de reconnaissance d'images qui permet d'utiliser des modèles PyTorch en Java via ONNX Runtime.
+
+### 📚 Documentation complète
+
+- **[CONVERSION_GUIDE.md](CONVERSION_GUIDE.md)** - Guide complet de conversion PyTorch → ONNX
+- **[EXAMPLES.md](EXAMPLES.md)** - Exemples d'utilisation et d'intégration
+- **[convert_model_to_onnx.py](convert_model_to_onnx.py)** - Script de conversion automatique
+- **[convert_custom_model.py](convert_custom_model.py)** - Script pour modèles personnalisés
+- **[convert.ps1](convert.ps1)** - Script PowerShell automatisé
+
+### 🚀 Démarrage rapide
+
+#### 1. Convertir votre modèle PyTorch (.bin) vers ONNX
+
+```powershell
+# Installer les dépendances Python
+pip install -r requirements.txt
+
+# Conversion automatique
+.\convert.ps1 -ModelPath "chemin\vers\model.bin"
+
+# OU avec Python directement
+python convert_model_to_onnx.py
+```
+
+#### 2. Copier le modèle dans les ressources
+
+```powershell
+Copy-Item model.onnx src\main\resources\
+```
+
+#### 3. Lancer l'application
+
+```powershell
+.\mvnw.cmd quarkus:dev
+```
+
+#### 4. Tester l'API
+
+```bash
+# Health check
+curl http://localhost:8080/api/image/health
+
+# Reconnaissance d'image
+curl -X POST http://localhost:8080/api/image/recognize \
+  -F "file=@image.jpg"
+```
+
+### 🎯 Endpoints disponibles
+
+- `POST /api/image/recognize` - Reconnaissance d'image
+- `GET /api/image/health` - Vérification du service
+- `GET /api/image/info` - Informations du modèle
+
+Consultez **[EXAMPLES.md](EXAMPLES.md)** pour plus de détails.
+
 ## Running the application in dev mode
 
 You can run your application in dev mode that enables live coding using:

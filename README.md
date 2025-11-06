@@ -1,114 +1,67 @@
-# Travel Inspiration App
+# Monument Recognition App
 
-A full-stack application for discovering travel destinations through image uploads. Users can upload photos or take pictures to find flight options to similar destinations.
+Application de reconnaissance de monuments utilisant CLIP et ONNX Runtime (100% local, pas d'API externe).
 
-## Tech Stack
+## 🚀 Installation
 
-### Backend
-- **Quarkus** - Java framework
-- **LLaMA 2** - Local LLM for text generation
-- **llama.cpp** - LLM inference engine
+### Prérequis
+- Java 21+
+- Node.js 18+
+- Maven
 
-### Frontend
-- **React 19** with TypeScript
-- **Vite** - Build tool and dev server
-- **Material-UI** - Component library
-- **Emotion** - Styling solution
+### Setup des modèles ONNX
 
-## Project Structure
+⚠️ Les modèles CLIP ne sont pas inclus dans Git (trop volumineux). Téléchargez-les :
 
+```bash
+cd backend/src/main/resources
+
+# Vision model (85 MB)
+curl -L -o clip_vision.onnx "https://huggingface.co/Xenova/clip-vit-base-patch32/resolve/main/onnx/vision_model.onnx"
+
+# Text model (62 MB)
+curl -L -o clip_text.onnx "https://huggingface.co/Xenova/clip-vit-base-patch32/resolve/main/onnx/text_model_quantized.onnx"
 ```
-├── backend/          # Quarkus backend application
-├── frontend/         # React frontend application
-└── ressources/       # Additional resources
+
+## 📦 Lancer l'application
+
+### Backend (Quarkus)
+
+```bash
+cd backend
+.\mvnw.cmd quarkus:dev
 ```
 
-## Getting Started
+API disponible sur `http://localhost:8080`
 
-### Backend
+### Frontend (React + Vite)
 
-1. Navigate to the backend directory:
-   ```bash
-   cd backend
-   ```
+```bash
+cd frontend
+npm install
+npm run dev
+```
 
-2. Run the application in dev mode:
-   ```bash
-   ./mvnw quarkus:dev
-   ```
+Interface disponible sur `http://localhost:5173`
 
-The backend will be available at `http://localhost:8080`
+## 🧪 Test de l'API
 
-### Frontend
+```bash
+curl -X POST http://localhost:8080/api/image/recognize -F "file=@monument.jpg"
+```
 
-1. Navigate to the frontend directory:
-   ```bash
-   cd frontend
-   ```
+Réponse :
+```json
+{
+  "monument": "Tour Eiffel",
+  "confidence": 0.95,
+  "top5": [
+    {"monument": "Tour Eiffel", "confidence": 0.95},
+    {"monument": "Arc de Triomphe", "confidence": 0.75}
+  ]
+}
+```
 
-2. Install dependencies:
-   ```bash
-   npm install
-   ```
+## 🏛️ Monuments reconnus
 
-3. Start the development server:
-   ```bash
-   npm run dev
-   ```
-
-The frontend will be available at `http://localhost:5173`
-
-## Features
-
-- Image upload from gallery
-- Camera integration for taking photos
-- AI-powered destination analysis
-- Flight recommendations based on uploaded images
-
-## API Endpoints
-
-- `POST /api/chat` - Generate text using LLM
-
-## Suggestions for a good README
-
-Every project is different, so consider which of these sections apply to yours. The sections used in the template are suggestions for most open source projects. Also keep in mind that while a README can be too long and detailed, too long is better than too short. If you think your README is too long, consider utilizing another form of documentation rather than cutting out information.
-
-## Name
-Choose a self-explaining name for your project.
-
-## Description
-Let people know what your project can do specifically. Provide context and add a link to any reference visitors might be unfamiliar with. A list of Features or a Background subsection can also be added here. If there are alternatives to your project, this is a good place to list differentiating factors.
-
-## Badges
-On some READMEs, you may see small images that convey metadata, such as whether or not all the tests are passing for the project. You can use Shields to add some to your README. Many services also have instructions for adding a badge.
-
-## Visuals
-Depending on what you are making, it can be a good idea to include screenshots or even a video (you'll frequently see GIFs rather than actual videos). Tools like ttygif can help, but check out Asciinema for a more sophisticated method.
-
-## Installation
-Within a particular ecosystem, there may be a common way of installing things, such as using Yarn, NuGet, or Homebrew. However, consider the possibility that whoever is reading your README is a novice and would like more guidance. Listing specific steps helps remove ambiguity and gets people to using your project as quickly as possible. If it only runs in a specific context like a particular programming language version or operating system or has dependencies that have to be installed manually, also add a Requirements subsection.
-
-## Usage
-Use examples liberally, and show the expected output if you can. It's helpful to have inline the smallest example of usage that you can demonstrate, while providing links to more sophisticated examples if they are too long to reasonably include in the README.
-
-## Support
-Tell people where they can go to for help. It can be any combination of an issue tracker, a chat room, an email address, etc.
-
-## Roadmap
-If you have ideas for releases in the future, it is a good idea to list them in the README.
-
-## Contributing
-State if you are open to contributions and what your requirements are for accepting them.
-
-For people who want to make changes to your project, it's helpful to have some documentation on how to get started. Perhaps there is a script that they should run or some environment variables that they need to set. Make these steps explicit. These instructions could also be useful to your future self.
-
-You can also document commands to lint the code or run tests. These steps help to ensure high code quality and reduce the likelihood that the changes inadvertently break something. Having instructions for running tests is especially helpful if it requires external setup, such as starting a Selenium server for testing in a browser.
-
-## Authors and acknowledgment
-Show your appreciation to those who have contributed to the project.
-
-## License
-For open source projects, say how it is licensed.
-
-## Project status
-If you have run out of energy or time for your project, put a note at the top of the README saying that development has slowed down or stopped completely. Someone may choose to fork your project or volunteer to step in as a maintainer or owner, allowing your project to keep going. You can also make an explicit request for maintainers.
+30 monuments : Tour Eiffel, Arc de Triomphe, Taj Mahal, Colisée, Statue de la Liberté, Big Ben, Pyramides de Gizeh, Notre-Dame de Paris, Sagrada Familia, Burj Khalifa, Christ Rédempteur, Machu Picchu, Grande Muraille de Chine, Opéra de Sydney, Stonehenge, Mont Rushmore, Alhambra, Parthénon, Petra, Angkor Wat, Chichen Itza, Mont Saint-Michel, Neuschwanstein, Cathédrale Saint-Basile, Golden Gate Bridge, Empire State Building, Tower Bridge, Louvre, Brandenburg Gate, Palace of Westminster.

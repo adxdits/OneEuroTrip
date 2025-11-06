@@ -1,0 +1,52 @@
+# Node modules
+node_modules/
+frontend/node_modules/
+
+# Build outputs
+backend/target/
+frontend/dist/
+frontend/build/
+
+# Model files (large ONNX models)
+*.onnx
+backend/src/main/resources/*.onnx
+
+# PyTorch models
+*.bin
+*.pt
+*.pth
+
+# Python
+__pycache__/
+*.py[cod]
+*.pyc
+*.pyo
+*.pyd
+.Python
+env/
+venv/
+*.egg-info/
+
+# Logs
+*.log
+llama.log
+
+# IDE
+.vscode/
+.idea/
+*.iml
+*.swp
+*.swo
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Environment variables
+.env
+.env.local
+
+# Temporary files
+*.tmp
+*.temp
+labels_temp.json
