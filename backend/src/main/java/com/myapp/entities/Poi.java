@@ -5,6 +5,7 @@ import jakarta.persistence.*;
 import java.util.List;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 
 @Entity
 @Table(name = "poi", uniqueConstraints = {@UniqueConstraint(columnNames = {"name", "location"})})
@@ -21,8 +22,7 @@ public class Poi extends PanacheEntityBase {
     public String description;
     public String location;
     public String image_url;
-
     @OneToMany(mappedBy = "poi", cascade = CascadeType.ALL)
-    @com.fasterxml.jackson.annotation.JsonIgnore
+    @JsonIgnore
     public List<PoiImage> images;
 }

@@ -29,25 +29,36 @@ const Header: React.FC = () => {
     const load = async () => {
       try {
         const list: User[] = await getUsers()
-        if (!mounted) return
+        if (!mounted) {
+          return
+        }
         if (!list || list.length === 0) {
           const created = await createUser('defaut')
           setUsers([created])
           setCurrentUser(created)
-          if (created.id) localStorage.setItem('currentUserId', String(created.id))
+          if (created.id) {
+            localStorage.setItem('currentUserId', String(created.id))
+          }
           localStorage.setItem('currentUserPseudo', created.pseudo)
         } else {
           setUsers(list)
           const storedId = localStorage.getItem('currentUserId')
           let selected: User | undefined = undefined
-          if (storedId) selected = list.find(u => String(u.id) === storedId)
-          if (!selected) selected = list[0]
+          if (storedId) {
+            selected = list.find(u => String(u.id) === storedId)
+          }
+          if (!selected) {
+            selected = list[0]
+          }
           setCurrentUser(selected)
-          if (selected && selected.id) localStorage.setItem('currentUserId', String(selected.id))
-          if (selected) localStorage.setItem('currentUserPseudo', selected.pseudo)
+          if (selected && selected.id) {
+            localStorage.setItem('currentUserId', String(selected.id))
+          }
+          if (selected) {
+            localStorage.setItem('currentUserPseudo', selected.pseudo)
+          }
         }
       } catch (e) {
-        // keep silent; in production you'd show an error
         console.error('Failed to load users', e)
       }
     }
@@ -93,7 +104,9 @@ const Header: React.FC = () => {
         const created = await createUser('defaut')
         setUsers([created])
         setCurrentUser(created)
-        if (created.id) localStorage.setItem('currentUserId', String(created.id))
+        if (created.id) {
+          localStorage.setItem('currentUserId', String(created.id))
+        }
         localStorage.setItem('currentUserPseudo', created.pseudo)
       } else {
         setUsers(list)
@@ -101,7 +114,9 @@ const Header: React.FC = () => {
         if (currentUser?.id === userToDelete.id) {
           const sel = list[0]
           setCurrentUser(sel)
-          if (sel.id) localStorage.setItem('currentUserId', String(sel.id))
+          if (sel.id) {
+            localStorage.setItem('currentUserId', String(sel.id))
+          }
           localStorage.setItem('currentUserPseudo', sel.pseudo)
         }
       }
@@ -144,7 +159,9 @@ const Header: React.FC = () => {
       // if renamed user is current, update currentUser and localStorage
       if (currentUser?.id === userToRename.id) {
         setCurrentUser(updated)
-        if (updated.id) localStorage.setItem('currentUserId', String(updated.id))
+        if (updated.id) {
+          localStorage.setItem('currentUserId', String(updated.id))
+        }
         localStorage.setItem('currentUserPseudo', updated.pseudo)
       }
       closeRenameDialog()
@@ -182,7 +199,9 @@ const Header: React.FC = () => {
       const list: User[] = await getUsers()
       setUsers(list)
       setCurrentUser(created)
-      if (created.id) localStorage.setItem('currentUserId', String(created.id))
+      if (created.id) {
+        localStorage.setItem('currentUserId', String(created.id))
+      }
       localStorage.setItem('currentUserPseudo', created.pseudo)
       closeNewUserDialog()
     } catch (e: any) {
@@ -248,7 +267,7 @@ const Header: React.FC = () => {
                   edge="end"
                   size="small"
                   onClick={(e) => openRenameDialog(u, e)}
-                  aria-label={`Renommer ${u.pseudo}`}
+                  aria-label={`Rename ${u.pseudo}`}
                   sx={{ ml: 1 }}
                 >
                   <Edit fontSize="small" />
@@ -257,7 +276,7 @@ const Header: React.FC = () => {
                   edge="end"
                   size="small"
                   onClick={(e) => openConfirmDelete(u, e)}
-                  aria-label={`Supprimer ${u.pseudo}`}
+                  aria-label={`Delete ${u.pseudo}`}
                   sx={{ ml: 1 }}
                 >
                   <Delete fontSize="small" />
@@ -265,7 +284,7 @@ const Header: React.FC = () => {
               </MenuItem>
             ))
           ) : (
-            <MenuItem disabled sx={{ py: 1.5 }}>Aucun utilisateur</MenuItem>
+            <MenuItem disabled sx={{ py: 1.5 }}>No User</MenuItem>
           )}
 
           <Divider />
@@ -274,12 +293,12 @@ const Header: React.FC = () => {
             <ListItemIcon sx={{ minWidth: 56 }}>
               <Avatar sx={{ width: 36, height: 36, bgcolor: 'primary.main', color: 'white', fontWeight: 700 }}>+</Avatar>
             </ListItemIcon>
-            <ListItemText primary="Ajouter un utilisateur" sx={{ ml: 1 }} />
+            <ListItemText primary="Add User" sx={{ ml: 1 }} />
           </MenuItem>
         </Menu>
 
         <Dialog open={isNewDialogOpen} onClose={closeNewUserDialog} fullWidth maxWidth="xs">
-          <DialogTitle>Nouvel utilisateur</DialogTitle>
+          <DialogTitle>New User</DialogTitle>
           <DialogContent>
             <TextField
               autoFocus
@@ -295,31 +314,31 @@ const Header: React.FC = () => {
             />
           </DialogContent>
           <DialogActions>
-            <Button onClick={closeNewUserDialog} disabled={isCreating}>Annuler</Button>
+            <Button onClick={closeNewUserDialog} disabled={isCreating}>Cancel</Button>
             <Button onClick={handleCreateUser} variant="contained" disabled={isCreating}>
-              {isCreating ? 'Création...' : 'Créer'}
+              {isCreating ? 'Creating...' : 'Create'}
             </Button>
           </DialogActions>
         </Dialog>
         <Dialog open={isConfirmOpen} onClose={closeConfirmDelete} fullWidth maxWidth="xs">
-          <DialogTitle>Confirmer la suppression</DialogTitle>
+          <DialogTitle>Confirm Deletion</DialogTitle>
           <DialogContent>
             <Typography>
-              Êtes-vous sûr·e de vouloir supprimer l'utilisateur <strong>{userToDelete?.pseudo}</strong> ?
+              Are you sure you want to delete the user <strong>{userToDelete?.pseudo}</strong> ?
             </Typography>
             {deleteError && (
               <Typography color="error" variant="body2" sx={{ mt: 1 }}>{deleteError}</Typography>
             )}
           </DialogContent>
           <DialogActions>
-            <Button onClick={closeConfirmDelete} disabled={isDeleting}>Annuler</Button>
+            <Button onClick={closeConfirmDelete} disabled={isDeleting}>Cancel</Button>
             <Button color="error" variant="contained" onClick={handleConfirmDelete} disabled={isDeleting}>
-              {isDeleting ? 'Suppression...' : 'Supprimer'}
+              {isDeleting ? 'Deleting...' : 'Delete'}
             </Button>
           </DialogActions>
         </Dialog>
         <Dialog open={isRenameOpen} onClose={closeRenameDialog} fullWidth maxWidth="xs">
-          <DialogTitle>Renommer l'utilisateur</DialogTitle>
+          <DialogTitle>Rename User</DialogTitle>
           <DialogContent>
             <TextField
               autoFocus
@@ -335,9 +354,9 @@ const Header: React.FC = () => {
             />
           </DialogContent>
           <DialogActions>
-            <Button onClick={closeRenameDialog} disabled={isRenaming}>Annuler</Button>
+            <Button onClick={closeRenameDialog} disabled={isRenaming}>Cancel</Button>
             <Button onClick={handleRenameUser} variant="contained" disabled={isRenaming}>
-              {isRenaming ? 'En cours...' : 'Renommer'}
+              {isRenaming ? 'Renaming...' : 'Rename'}
             </Button>
           </DialogActions>
         </Dialog>

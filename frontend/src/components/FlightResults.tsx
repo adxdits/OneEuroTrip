@@ -1,12 +1,15 @@
 import React, { useState, useEffect } from 'react'
 import { Box, Typography, Stack, Paper, Chip, Button, CircularProgress } from '@mui/material'
+import { Snackbar, Alert } from '@mui/material'
 import { Flight, FlightTakeoff, FlightLand, AirlineSeatReclineNormal } from '@mui/icons-material'
+import CheckCircleOutlineIcon from '@mui/icons-material/CheckCircleOutline'
 import type { FlightResultsProps } from '../types'
 import { formatFlightDate, formatPrice } from '../services/flightApi'
 import { saveFlightForUser, checkUserHasTicket } from '../services/historyApi'
 
 const FlightResults: React.FC<FlightResultsProps> = ({ flights }) => {
   const [savingIds, setSavingIds] = useState<Record<string, boolean>>({})
+  const [snack, setSnack] = useState<{ open: boolean; severity: 'success' | 'error'; message: string }>({ open: false, severity: 'success', message: '' })
   const [savedIds, setSavedIds] = useState<Record<string, boolean>>({})
 
   useEffect(() => {
@@ -56,16 +59,16 @@ const FlightResults: React.FC<FlightResultsProps> = ({ flights }) => {
     try {
       setSavingIds(prev => ({ ...prev, [id]: true }))
       const stored = localStorage.getItem('currentUserId')
-      if (!stored) throw new Error('Aucun utilisateur courant sélectionné')
+      if (!stored) throw new Error('No current user selected')
       const userId = Number(stored)
-  await saveFlightForUser(flight, userId)
-  // mark as saved in UI
-  setSavedIds(prev => ({ ...prev, [id]: true }))
-  // simple feedback - alert for now
-  window.alert('Vol sauvegardé dans votre historique')
+      await saveFlightForUser(flight, userId)
+      // mark as saved in UI
+      setSavedIds(prev => ({ ...prev, [id]: true }))
+      // simple feedback - alert for now
+      setSnack({ open: true, severity: 'success', message: 'Flight saved to your history' })
     } catch (e: any) {
       console.error('Save failed', e)
-      window.alert('Erreur lors de la sauvegarde: ' + (e?.message || ''))
+      setSnack({ open: true, severity: 'error', message: 'Error during save: ' + (e?.message || '') })
     } finally {
       setSavingIds(prev => ({ ...prev, [id]: false }))
     }
@@ -218,10 +221,12 @@ const FlightResults: React.FC<FlightResultsProps> = ({ flights }) => {
                 </Button>
 
                 <Button
-                  variant="outlined"
+                  variant={savedIds[flight.id] ? 'contained' : 'outlined'}
+                  color={savedIds[flight.id] ? 'success' : 'primary'}
                   size="large"
                   onClick={() => handleSave(flight)}
                   disabled={Boolean(savingIds[flight.id]) || Boolean(savedIds[flight.id])}
+                  startIcon={savedIds[flight.id] ? <CheckCircleOutlineIcon /> : undefined}
                   sx={{ textTransform: 'none', fontWeight: 600, px: 3 }}
                 >
                   {savingIds[flight.id] ? <CircularProgress size={18} /> : (savedIds[flight.id] ? 'Sauvegardé' : 'Sauvegarder')}
@@ -231,6 +236,11 @@ const FlightResults: React.FC<FlightResultsProps> = ({ flights }) => {
           </Paper>
         ))}
       </Stack>
+      <Snackbar open={snack.open} autoHideDuration={4000} onClose={() => setSnack(s => ({ ...s, open: false }))} anchorOrigin={{ vertical: 'bottom', horizontal: 'center' }}>
+        <Alert severity={snack.severity} onClose={() => setSnack(s => ({ ...s, open: false }))} sx={{ width: '100%' }}>
+          {snack.message}
+        </Alert>
+      </Snackbar>
     </Box>
   )
 }
