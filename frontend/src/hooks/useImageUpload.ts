@@ -1,4 +1,4 @@
-import { useState, useRef } from 'react'
+import { useState, useRef, useEffect } from 'react'
 import camera from '../utils/camera'
 import type { UploadedImage, FlightResult } from '../types'
 import { searchFlights } from '../services/flightApi'
@@ -21,7 +21,6 @@ export const useImageUpload = () => {
   const videoRef = useRef<HTMLVideoElement>(null)
 
   const analyzeImage = async (file: File) => {
-    console.log('analyzeImage called')
     setIsAnalyzing(true)
     setFlightResults([])
     setCameraError(null)
@@ -34,16 +33,11 @@ export const useImageUpload = () => {
       body: formData,
     }).catch(() => null)
 
-    console.log('Backend response:', response)
-
     if (response?.ok) {
       const data = await response.json().catch(() => null)
-      console.log('Backend data:', data)
       
       if (data?.monument && data?.city) {
-        console.log('Searching flights for:', data.city, originAirport, departureDate)
         const flights = await searchFlights(data.city, originAirport, departureDate).catch(() => [])
-        console.log('Flights found:', flights)
         
         const flightsWithContext = flights.map(flight => ({
           ...flight,
@@ -68,19 +62,63 @@ export const useImageUpload = () => {
     }
   }
 
-  const handleOpenCamera = async () => {
+  const handleOpenCamera = () => {
     setCameraError(null)
     setIsCameraOpen(true)
-    
-    const started = await camera.startCamera(680, 480).catch(() => false)
-    
-    if (started && videoRef.current && camera.video) {
-      videoRef.current.srcObject = camera.video.srcObject
-      videoRef.current.play().catch(() => {})
-    } else {
-      setIsCameraOpen(false)
-    }
   }
+
+  useEffect(() => {
+    let mounted = true
+
+    const startCameraStream = async () => {
+      if (!isCameraOpen) return
+
+      let attempts = 0
+      while (!videoRef.current && attempts < 10) {
+        await new Promise(resolve => setTimeout(resolve, 100))
+        attempts++
+      }
+
+      if (!videoRef.current) {
+        setCameraError('Failed to initialize camera dialog')
+        setIsCameraOpen(false)
+        return
+      }
+
+      try {
+        await camera.startCamera(videoRef.current, 680, 480)
+        
+        if (!mounted) return
+        
+        videoRef.current.muted = true
+        const playPromise = videoRef.current.play()
+        
+        if (playPromise !== undefined) {
+          await playPromise
+        }
+      } catch (error) {
+        if (!mounted) return
+        
+        let errorMessage = 'Failed to access camera'
+        if (error instanceof Error) {
+          errorMessage = error.message
+          if (error.name === 'NotAllowedError') {
+            errorMessage = 'Camera permission denied. Please allow camera access.'
+          } else if (error.name === 'NotFoundError') {
+            errorMessage = 'No camera found on this device.'
+          }
+        }
+        setCameraError(errorMessage)
+        setIsCameraOpen(false)
+      }
+    }
+
+    startCameraStream()
+
+    return () => {
+      mounted = false
+    }
+  }, [isCameraOpen])
 
   const handleTakeSnapshot = () => {
     const snapshot = camera.takeSnapshot()

@@ -19,6 +19,16 @@ const CameraDialog: React.FC<CameraDialogProps> = ({
   videoRef, 
   error 
 }) => {
+  const [isLoading, setIsLoading] = React.useState(true)
+
+  React.useEffect(() => {
+    if (open) {
+      setIsLoading(true)
+      const timer = setTimeout(() => setIsLoading(false), 2000)
+      return () => clearTimeout(timer)
+    }
+  }, [open])
+
   return (
     <Dialog 
       open={open} 
@@ -43,26 +53,58 @@ const CameraDialog: React.FC<CameraDialogProps> = ({
         </IconButton>
       </DialogTitle>
       <DialogContent>
-        <Box 
+        {error ? (
+          <Box sx={{ p: 3, textAlign: 'center' }}>
+            <Typography color="error" gutterBottom>
+              Camera Error
+            </Typography>
+            <Typography variant="body2" color="text.secondary">
+              {error}
+            </Typography>
+            <Typography variant="body2" color="text.secondary" sx={{ mt: 2 }}>
+              Please ensure you've granted camera permissions to your browser.
+            </Typography>
+          </Box>
+        ) : (
+          <Box 
             sx={{ 
               position: 'relative',
               width: '100%',
               bgcolor: 'black',
               borderRadius: 2,
-              overflow: 'hidden'
+              overflow: 'hidden',
+              minHeight: '400px',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center'
             }}
           >
+            {isLoading && (
+              <Typography 
+                sx={{ 
+                  position: 'absolute', 
+                  color: 'white',
+                  zIndex: 1
+                }}
+              >
+                Starting camera...
+              </Typography>
+            )}
             <video
               ref={videoRef}
               autoPlay
               playsInline
+              muted
+              onLoadedMetadata={() => setIsLoading(false)}
               style={{
                 width: '100%',
-                height: 'auto',
+                height: '100%',
+                objectFit: 'cover',
                 display: 'block',
               }}
             />
           </Box>
+        )}
       </DialogContent>
       <DialogActions sx={{ p: 3, justifyContent: 'center' }}>
         <Button 
