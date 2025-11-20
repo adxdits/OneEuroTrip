@@ -61,6 +61,30 @@ export async function createHistory(history: HistoryPayload) {
   return res.json()
 }
 
+type HistoryCheckRequest = {
+  userId: number
+  poiId?: number
+  poiName?: string
+  poiLocation?: string
+  price?: number
+  transport_mode?: 'Avion' | 'Train' | 'Voiture'
+  start_date?: string
+  end_date?: string
+}
+
+export async function checkUserHasTicket(req: HistoryCheckRequest) {
+  const res = await fetch('/api/histories/check', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(req),
+  })
+  if (!res.ok) {
+    const text = await res.text()
+    throw new Error(`Failed to check history: ${res.status} ${text}`)
+  }
+  return res.json() as Promise<boolean>
+}
+
 // Helper that saves a flight: creates poi -> ticket -> history
 export async function saveFlightForUser(flight: any, userId: number) {
   // Determine poi fields

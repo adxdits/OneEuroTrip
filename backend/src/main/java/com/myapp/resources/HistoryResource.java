@@ -32,6 +32,9 @@ public class HistoryResource {
     TicketRepository ticketRepository;
 
     @Inject
+    com.myapp.repositories.PoiRepository poiRepository;
+
+    @Inject
     EntityManager em;
 
     private static final Logger LOG = Logger.getLogger(HistoryResource.class);
@@ -131,5 +134,76 @@ public class HistoryResource {
         if (!repository.deleteById(id)) {
             throw new NotFoundException("History not found");
         }
+    }
+
+    @POST
+    @Path("/check")
+    public boolean checkExists(com.myapp.resources.dto.HistoryCheckRequest req) {
+        if (req == null || req.userId == null) {
+            return false;
+        }
+
+        // Resolve ticket either by poiId or by matching unique fields
+        Long ticketId = null;
+        com.myapp.entities.Ticket ticket = null;
+        if (req.poiId != null && req.price != null) {
+            // try to parse transport mode enum
+            com.myapp.entities.Ticket.TransportMode tm = null;
+            try {
+                if (req.transportMode != null) {
+                    tm = com.myapp.entities.Ticket.TransportMode.valueOf(req.transportMode);
+                }
+            } catch (IllegalArgumentException iae) {
+                tm = null;
+            }
+            java.time.LocalDate sd = null;
+            java.time.LocalDate ed = null;
+            try { 
+                if (req.startDate != null) {
+                    sd = java.time.LocalDate.parse(req.startDate); 
+                }
+            } catch (Exception e) {}
+            try { 
+                if (req.endDate != null) {
+                    ed = java.time.LocalDate.parse(req.endDate); 
+                }
+            } catch (Exception e) {}
+            ticket = ticketRepository.findByUniqueFields(req.poiId, req.price, tm, sd, ed);
+        } else if (req.poiName != null) {
+            // try to find poi by name/location
+            com.myapp.entities.Poi found = poiRepository.findByNameAndLocationIgnoreCase(req.poiName, req.poiLocation);
+            if (found != null && found.id != null && req.price != null) {
+                com.myapp.entities.Ticket.TransportMode tm = null;
+                try { 
+                    if (req.transportMode != null) {
+                        tm = com.myapp.entities.Ticket.TransportMode.valueOf(req.transportMode); 
+                    }
+                } catch (Exception e) { 
+                    tm = null; 
+                }
+                java.time.LocalDate sd = null;
+                java.time.LocalDate ed = null;
+                try { 
+                    if (req.startDate != null) {
+                        sd = java.time.LocalDate.parse(req.startDate); 
+                    }
+                } catch (Exception e) {}
+                try { 
+                    if (req.endDate != null) {
+                        ed = java.time.LocalDate.parse(req.endDate); 
+                    }
+                } catch (Exception e) {}
+                ticket = ticketRepository.findByUniqueFields(found.id, req.price, tm, sd, ed);
+            }
+        }
+
+        if (ticket != null) {
+            ticketId = ticket.id;
+        }
+        if (ticketId == null) {
+            return false;
+        }
+        com.myapp.entities.History hist = repository.findByUserAndTicket(req.userId, ticketId);
+        return hist != null;
     }
 }

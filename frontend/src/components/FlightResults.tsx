@@ -1,12 +1,51 @@
-import React, { useState } from 'react'
+import React, { useState, useEffect } from 'react'
 import { Box, Typography, Stack, Paper, Chip, Button, CircularProgress } from '@mui/material'
 import { Flight, FlightTakeoff, FlightLand, AirlineSeatReclineNormal } from '@mui/icons-material'
 import type { FlightResultsProps } from '../types'
 import { formatFlightDate, formatPrice } from '../services/flightApi'
-import { saveFlightForUser } from '../services/historyApi'
+import { saveFlightForUser, checkUserHasTicket } from '../services/historyApi'
 
 const FlightResults: React.FC<FlightResultsProps> = ({ flights }) => {
   const [savingIds, setSavingIds] = useState<Record<string, boolean>>({})
+  const [savedIds, setSavedIds] = useState<Record<string, boolean>>({})
+
+  useEffect(() => {
+    // Check for each flight whether the current user already saved it
+    const stored = localStorage.getItem('currentUserId')
+    if (!stored) return
+    const userId = Number(stored)
+    if (!userId) return
+
+    const toDate = (s: string | undefined) => {
+      if (!s) return undefined
+      try {
+        const d = new Date(s)
+        if (isNaN(d.getTime())) return undefined
+        return d.toISOString().slice(0, 10)
+      } catch (e) {
+        return undefined
+      }
+    }
+
+    flights.forEach(async (flight) => {
+      try {
+        const exists = await checkUserHasTicket({
+          userId,
+          poiName: flight.monument || flight.city || 'Destination',
+          poiLocation: `${flight.city || ''}, ${flight.country || ''}`,
+          price: Number(flight.price) || 0,
+          transport_mode: 'Avion',
+          start_date: toDate(flight.departureTime),
+          end_date: toDate(flight.arrivalTime),
+        })
+        if (exists) setSavedIds(prev => ({ ...prev, [flight.id]: true }))
+      } catch (e) {
+        // ignore check errors; keep button enabled
+        // eslint-disable-next-line no-console
+        console.debug('history check failed', e)
+      }
+    })
+  }, [flights])
 
   const handleBookNow = (bookingUrl: string) => {
     window.open(bookingUrl, '_blank', 'noopener,noreferrer')
@@ -19,9 +58,11 @@ const FlightResults: React.FC<FlightResultsProps> = ({ flights }) => {
       const stored = localStorage.getItem('currentUserId')
       if (!stored) throw new Error('Aucun utilisateur courant sélectionné')
       const userId = Number(stored)
-      await saveFlightForUser(flight, userId)
-      // simple feedback - alert for now
-      window.alert('Vol sauvegardé dans votre historique')
+  await saveFlightForUser(flight, userId)
+  // mark as saved in UI
+  setSavedIds(prev => ({ ...prev, [id]: true }))
+  // simple feedback - alert for now
+  window.alert('Vol sauvegardé dans votre historique')
     } catch (e: any) {
       console.error('Save failed', e)
       window.alert('Erreur lors de la sauvegarde: ' + (e?.message || ''))
@@ -180,10 +221,10 @@ const FlightResults: React.FC<FlightResultsProps> = ({ flights }) => {
                   variant="outlined"
                   size="large"
                   onClick={() => handleSave(flight)}
-                  disabled={Boolean(savingIds[flight.id])}
+                  disabled={Boolean(savingIds[flight.id]) || Boolean(savedIds[flight.id])}
                   sx={{ textTransform: 'none', fontWeight: 600, px: 3 }}
                 >
-                  {savingIds[flight.id] ? <CircularProgress size={18} /> : 'Sauvegarder'}
+                  {savingIds[flight.id] ? <CircularProgress size={18} /> : (savedIds[flight.id] ? 'Sauvegardé' : 'Sauvegarder')}
                 </Button>
               </Stack>
             </Box>
