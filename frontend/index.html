@@ -1,13 +1,55 @@
-<!doctype html>
-<html lang="en">
-  <head>
-    <meta charset="UTF-8" />
-    <link rel="icon" type="image/svg+xml" href="/airplane.svg" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>OneEuroTrip</title>
-  </head>
-  <body>
-    <div id="root"></div>
-    <script type="module" src="/src/main.tsx"></script>
-  </body>
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Monument Recognition</title>
+</head>
+<body>
+    <h1>Monument Recognition</h1>
+    
+    <input type="file" id="imageInput" accept="image/*">
+    <button onclick="recognize()">Recognize</button>
+    
+    <div id="result"></div>
+
+    <script>
+        async function recognize() {
+            const input = document.getElementById('imageInput');
+            const result = document.getElementById('result');
+            
+            if (!input.files[0]) {
+                result.textContent = 'Please select an image';
+                return;
+            }
+            
+            const formData = new FormData();
+            formData.append('file', input.files[0]);
+            
+            result.textContent = 'Analyzing...';
+            
+            try {
+                const response = await fetch('http://localhost:8080/api/image/recognize', {
+                    method: 'POST',
+                    body: formData
+                });
+                
+                const data = await response.json();
+                
+                if (data.error) {
+                    result.textContent = 'Error: ' + data.error;
+                } else {
+                    result.innerHTML = '<h2>Result: ' + data.monument + '</h2>' +
+                        '<p>Confidence: ' + (data.confidence * 100).toFixed(1) + '%</p>';
+                    
+                    if (data.top3) {
+                        result.innerHTML += '<h3>Top 3:</h3><ul>' +
+                            data.top3.map((m, i) => '<li>' + (i+1) + '. ' + m.name + ' (' + (m.score * 100).toFixed(1) + '%)</li>').join('') +
+                            '</ul>';
+                    }
+                }
+            } catch (err) {
+                result.textContent = 'Error: ' + err.message;
+            }
+        }
+    </script>
+</body>
 </html>
